@@ -6,16 +6,6 @@
 #define LEN_MAX 50
 #define PROB_MIN 10
 #define PROB_MAX 90
-//
-int width, p, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
-
-void printTrain();
-void printStatus(int turn);
-void moveCitizen();
-void moveZombie(int turn);
-void reset();
-void user();
-int GameResult();
 
 int main(void) {
     srand((unsigned int)time(NULL));
