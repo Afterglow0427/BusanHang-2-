@@ -2,10 +2,35 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include <time.h>
-#define LEN_MIN 15
+//2-2 부산헹(1)에서 수정
+//파라미터
+#define LEN_MIN 15  //기차 길이
 #define LEN_MAX 50
-#define PROB_MIN 10
+#define STM_MIN 0   //마동석 길이
+#define STM_MAX 5
+#define PROB_MIN 10 //확률
 #define PROB_MAX 90
+#define AGGRO_MIN 0 //어그로 범위
+#define AGGRO_MAX 5
+
+//마동석 이동 방향
+#define MOVE_LEFT 1
+#define MOVE_STAY 0
+
+//좀비의 공격 대상
+#define ATK_NONE 0
+#define ATK_CITIZEN 1
+#define ATK_DONGSEOK 2
+
+//마동석 행동
+#define ACTION_REST 0
+#define ACTION_PROVOKE 1
+#define ACTION_PULL 2
+
+
+//2-1 20줄 이내 함수로 코드 줄이기
+
+int width, p, stm, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
 
 //함수 선언
 void printTrain();
@@ -16,7 +41,7 @@ void reset();
 void user();
 void GameResult();
 
-int width, p, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
+
 
 //기차 길이 출력
 void printTrain() {
@@ -93,20 +118,30 @@ void reset() {
     dongseok_loc = width;
 }
 
-// 사용자 입력 함수
+// 사용자 입력 함수//2-2 입력값 처리
 void user() {
-    printf("train length(15~50)>>");
-    scanf_s("%d", &width);
-
-    if (width < LEN_MIN || width > LEN_MAX) {
-        exit(0);
+    while (1) {
+        printf("train length(15~50)>>");
+        scanf_s("%d", &width);
+        if (width >= LEN_MIN && width <= LEN_MAX) {
+            break;
+        }
     }
 
-    printf("percentile probability 'p'(10~90)>>");
-    scanf_s("%d", &p);
+    while (1) {
+        printf("madongseok stamina(0~5)>>");
+        scanf_s("%d", &stm);
+        if (stm >= STM_MIN && stm <= STM_MAX) {
+            break;
+        }
+    }
 
-    if (p < PROB_MIN || p > PROB_MAX) {
-        exit(0);
+    while (1) {
+        printf("percentile probability 'p'(10~90)>>");
+        scanf_s("%d", &p);
+        if (p >= PROB_MIN && p <= PROB_MAX) {
+            break;
+        }
     }
 }
 
