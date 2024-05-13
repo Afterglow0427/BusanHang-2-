@@ -30,15 +30,17 @@
 
 //2-1 20줄 이내 함수로 코드 줄이기
 
-int width, p, stm, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
-
+int width, p, stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
+int aggro = 0;
 //함수 선언
 void printTrain();
 void printStatus(int turn);
 void moveCitizen();
 void moveZombie(int turn);
+void moveDongseok();
 void reset();
 void user();
+void userDongseok();
 void GameResult();
 
 
@@ -75,10 +77,11 @@ void printTrain() {
 // 상태 출력 함수
 void printStatus(int turn) {
     if (citizen_loc < prev_citizen_loc) {
-        printf("citizen : %d -> %d\n", prev_citizen_loc - 1, citizen_loc - 1);
+        printf("citizen : %d -> %d (aggro: %d)\n", prev_citizen_loc - 1, citizen_loc - 1,aggro);
+
     }
     else {
-        printf("citizen : stay %d\n", prev_citizen_loc - 1);
+        printf("citizen : stay %d (aggro: %d)\n", prev_citizen_loc - 1,aggro);
     }
 
     if (turn % 2 == 0) {
@@ -93,6 +96,7 @@ void printStatus(int turn) {
         }
     }
     printf("\n");
+   
 }
 
 // 시민 이동 함수
@@ -100,6 +104,10 @@ void moveCitizen() {
     int citizen = rand() % 100;
     if (citizen >= p) {
         citizen_loc--;
+        aggro++;
+    }
+    else {
+        aggro--;
     }
 }
 
@@ -111,6 +119,16 @@ void moveZombie(int turn) {
     }
 }
 
+//동석 이동 함수
+void moveDongseok() {
+    if (MOVE_STAY == dongseok) {
+        dongseok_loc;
+    }
+    else if (MOVE_LEFT == dongseok) {
+        dongseok_loc--;
+    }
+    
+}
 // 초기화 함수
 void reset() {
     citizen_loc = width - 4;
@@ -134,6 +152,7 @@ void user() {
         if (stm >= STM_MIN && stm <= STM_MAX) {
             break;
         }
+
     }
 
     while (1) {
@@ -144,7 +163,17 @@ void user() {
         }
     }
 }
+//동석 입력 함수
+void userDongseok() {
+    while (1) {
+        printf("madongseok move(0:stay, 1:left)>>");
+        scanf_s("%d", &dongseok);
+        if (dongseok == MOVE_LEFT || dongseok == MOVE_STAY) {
+            break;
+        }
+    }
 
+}
 // 게임 결과 출력 함수
 void GameResult() {
     if (citizen_loc == 2) {
@@ -170,7 +199,7 @@ int main(void) {
     printf("##  ##   ##  ##  ##   ##   ##  ##  ##   ##            ##  ##  ##   ##  ##   ##   ##  ##     ##     ##  ##\n");
     printf("######     ####    #####    ##  ##  ##   ##           #######   #####   ##   ##  ######    ######  #######\n");
 
-    Sleep(3000);
+    Sleep(1000);
     void clear(); {
 
         system("cls");
@@ -192,11 +221,15 @@ int main(void) {
         printTrain();
         printStatus(turn);
 
+        userDongseok();
+        moveDongseok();
+        
+
         if (citizen_loc == 2 || zombie_loc - citizen_loc == 1) {
             break;
         }
 
-        Sleep(4000);
+        
     }
 
    GameResult();
