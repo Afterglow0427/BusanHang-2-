@@ -102,10 +102,10 @@ void printStatus(int turn) {
 }
 //동석 상태 출력 함수
 void DongseokStatus() {
-    if (MOVE_STAY == dongseok_loc) {
+    if (MOVE_STAY == dongseok) {
         printf("madongseok : stay %d (aggro: %d, stamina %d)\n", dongseok_loc, dongseokaggro,stm);
     }
-    else if (MOVE_LEFT == dongseok_loc) {
+    else if (MOVE_LEFT == dongseok) {
         printf("madongseok : %d -> %d (aggro: %d, stamina: %d)\n", dongseok_loc, dongseok_loc - 1, dongseokaggro, stm);
     }
 }
@@ -129,43 +129,49 @@ void moveCitizen() {
 // 좀비 이동 함수
 void moveZombie(int turn) {
     int zombie = rand() % 100;
-    if ((turn == 1 || turn % 2 == 1) && zombie >= p) {
-        //어그로 수치가 높은 쪽으로 좀비 이동
-        if (aggro > dongseokaggro) {
-            zombie_loc = prev_zombie_loc - 1;
-        }
-        else if (aggro < dongseokaggro) {
-            zombie_loc = prev_zombie_loc + 1;
-        }
-        else {
-            if (citizen_loc < dongseok_loc) {
-                zombie_loc = prev_zombie_loc - 1;
-            }
-            else {
-                zombie_loc = prev_zombie_loc + 1;
-            }
-        }
-    }
-    else if (dongseok_loc - zombie_loc == 1 || zombie_loc - dongseok_loc == 1) {
+    if (zombie_loc - citizen_loc == 1 || abs(dongseok_loc - zombie_loc == 1)) {
         zombie_loc;
     }
+    if ((turn == 1 || turn % 2 == 1) && zombie >= p) {
+        
+            //어그로 수치가 높은 쪽으로 좀비 이동
+            if (aggro > dongseokaggro) {
+                zombie_loc = prev_zombie_loc - 1;
+            }
+            else if (aggro < dongseokaggro) {
+                zombie_loc = prev_zombie_loc + 1;
+            }
+            else {
+                if (citizen_loc < dongseok_loc) {
+                    zombie_loc = prev_zombie_loc - 1;
+                }
+                else {
+                    zombie_loc = prev_zombie_loc + 1;
+                }
+            }
+        
+    }
+    
 }
 
 //동석 이동 함수
 void moveDongseok() {
-    if (MOVE_STAY == dongseok) {
-        if (dongseokaggro < AGGRO_MIN) {
-            dongseokaggro++;
-        }
+    if (abs(dongseok_loc - zombie_loc == 1)) {
         dongseok_loc;
     }
-    else if (MOVE_LEFT == dongseok) {
-        if (dongseokaggro > AGGRO_MAX) {
-            dongseokaggro--;
+    else {
+        if (MOVE_STAY == dongseok) {
+            if (dongseokaggro < AGGRO_MIN) {
+                dongseokaggro++;
+            }
         }
-        dongseok_loc--;
+        else if (MOVE_LEFT == dongseok) {
+            if (dongseokaggro > AGGRO_MAX) {
+                dongseokaggro--;
+            }
+            dongseok_loc--; // 마동석 위치 변경
+        }
     }
-    
 }
 // 초기화 함수
 void reset() {
@@ -261,8 +267,9 @@ int main(void) {
 
         userDongseok();
         moveDongseok();
+        printTrain();
         DongseokStatus();
-
+        
         if (citizen_loc == 2 || zombie_loc - citizen_loc == 1) {
             break;
         }
