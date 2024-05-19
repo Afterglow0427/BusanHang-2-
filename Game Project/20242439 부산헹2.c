@@ -29,8 +29,8 @@
 
 
 //2-1 20줄 이내 함수로 코드 줄이기
-
-int width, p, stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
+//dongseok = 동석의 상태, 0,1
+int width, p, stm, prev_stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
 int aggro = 1;
 int dongseokaggro = 1;
 //함수 선언
@@ -129,9 +129,7 @@ void moveCitizen() {
 // 좀비 이동 함수
 void moveZombie(int turn) {
     int zombie = rand() % 100;
-    if (zombie_loc - citizen_loc == 1 || abs(dongseok_loc - zombie_loc == 1)) {
-        zombie_loc;
-    }
+    
     if ((turn == 1 || turn % 2 == 1) && zombie >= p) {
         
             //어그로 수치가 높은 쪽으로 좀비 이동
@@ -210,10 +208,19 @@ void user() {
 //동석 입력 함수
 void userDongseok() {
     while (1) {
-        printf("madongseok move(0:stay, 1:left)>>");
-        scanf_s("%d", &dongseok);
-        if (dongseok == MOVE_LEFT || dongseok == MOVE_STAY) {
-            break;
+        if (abs(dongseok_loc - zombie_loc == 1)) {
+            printf("madongseok move(0:stay)>>");
+            scanf_s("%d", &dongseok);
+            if (dongseok == MOVE_STAY) {
+                break;
+            }
+        }
+        else {
+            printf("madongseok move(0:stay, 1:left)>>");
+            scanf_s("%d", &dongseok);
+            if (dongseok == MOVE_LEFT || dongseok == MOVE_STAY) {
+                break;
+            }
         }
     }
 
@@ -221,10 +228,10 @@ void userDongseok() {
 // 게임 결과 출력 함수
 void GameResult() {
     if (citizen_loc == 2) {
-        printf("\nSUCCESS!\nCitizen(s) escaped to the next train\n");
+        printf("\nYOU WIN!\n");
     }
-    else {
-        printf("\nGAME OVER!\nCitizen(s) has(have) been attacked by a zombie\n");
+    else if(zombie_loc-citizen_loc==1 || stm==0) {
+        printf("\nGAME OVER! citizen dead...\n");
     }
 }
 
@@ -255,9 +262,11 @@ int main(void) {
 
     int turn = 0;
     while (1) {
+        printf("\n");
         turn++;
         prev_citizen_loc = citizen_loc;
         prev_zombie_loc = zombie_loc;
+        prev_stm = stm;
 
         moveCitizen();
         moveZombie(turn);
@@ -269,10 +278,40 @@ int main(void) {
         moveDongseok();
         printTrain();
         DongseokStatus();
+        printf("\n");
+        //행동
+        //시민
+        printf("citizen does nothing.\n");
         
-        if (citizen_loc == 2 || zombie_loc - citizen_loc == 1) {
+        //좀비
+        if (zombie_loc - citizen_loc ==1 && dongseok_loc-zombie_loc==1) {
+            if (aggro < dongseokaggro) {
+                stm--;
+                if (stm < STM_MIN) {
+                    stm++;
+                }
+                printf("Zombie attacked madongseok, (aggro: %d vs. %d,madongseok stamina: %d -> %d)\n",aggro,dongseokaggro,prev_stm,stm);
+           
+            }
+        }
+        else if (dongseok_loc - zombie_loc == 1) {
+            stm--;
+            if (stm < STM_MIN) {
+                    stm++;
+                }
+            printf("Zombie attacked Madongseok, Madongseok stamina: %d -> %d\n", prev_stm, stm);
+            
+        }
+        else {
+            printf("Zombie attacked nobody\n");
+        }
+
+        //마동석
+
+        if (citizen_loc == 2 || zombie_loc - citizen_loc == 1 || stm==0) {
             break;
         }
+       
 
         
     }
