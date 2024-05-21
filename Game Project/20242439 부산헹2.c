@@ -30,9 +30,10 @@
 
 //2-1 20줄 이내 함수로 코드 줄이기
 //dongseok = 동석의 상태, 0,1
-int width, p, stm, prev_stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc;
+int width, p, stm, prev_stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc, prev_dongseokaggro;
 int aggro = 1;
 int dongseokaggro = 1;
+
 //함수 선언
 void printTrain();
 void printStatus(int turn);
@@ -267,7 +268,7 @@ int main(void) {
         prev_citizen_loc = citizen_loc;
         prev_zombie_loc = zombie_loc;
         prev_stm = stm;
-
+        prev_dongseokaggro = dongseokaggro;
         moveCitizen();
         moveZombie(turn);
 
@@ -307,7 +308,35 @@ int main(void) {
         }
 
         //마동석
-
+        printf("madongsek action(0.rest, 1.provoke)>> ");
+        scanf_s("%d", &dongseok);
+        printf("\n\n");
+        if (dongseok_loc - zombie_loc == 1) {
+            if (ACTION_REST == dongseok) {
+                printf("madongseok rests...\n");
+                dongseokaggro--;
+                stm++;
+                printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+            }
+            else if (ACTION_PROVOKE == dongseok) {
+                printf("madongseok provoked zombie...\n");
+                dongseokaggro = AGGRO_MAX;
+                printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+            }
+        }
+        else {
+            if (ACTION_REST == dongseok) {
+                printf("madongseok rests...\n");
+                dongseokaggro--;
+                stm++;
+                printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+            }
+            else if (ACTION_PROVOKE == dongseok) {
+                printf("madongseok provoked zombie...\n");
+                dongseokaggro = AGGRO_MAX;
+                printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+            }
+        }
         if (citizen_loc == 2 || zombie_loc - citizen_loc == 1 || stm==0) {
             break;
         }
