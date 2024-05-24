@@ -33,6 +33,8 @@
 int width, p, stm, prev_stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc, prev_dongseokaggro;
 int aggro = 1;
 int dongseokaggro = 1;
+int dongseok_action = ACTION_REST;
+int zombie_immobilized = 0;
 
 //함수 선언
 void printTrain();
@@ -130,9 +132,12 @@ void moveCitizen() {
 // 좀비 이동 함수
 void moveZombie(int turn) {
     int zombie = rand() % 100;
-    
+    if (zombie_immobilized) {
+        zombie_immobilized = 0;
+        return;
+    }
     if ((turn == 1 || turn % 2 == 1) && zombie >= p) {
-        
+        if (zombie >= p) {
             //어그로 수치가 높은 쪽으로 좀비 이동
             if (aggro > dongseokaggro) {
                 zombie_loc = prev_zombie_loc - 1;
@@ -148,7 +153,7 @@ void moveZombie(int turn) {
                     zombie_loc = prev_zombie_loc + 1;
                 }
             }
-        
+        }
     }
     
 }
@@ -269,6 +274,7 @@ int main(void) {
         prev_zombie_loc = zombie_loc;
         prev_stm = stm;
         prev_dongseokaggro = dongseokaggro;
+
         moveCitizen();
         moveZombie(turn);
 
@@ -280,38 +286,40 @@ int main(void) {
         printTrain();
         DongseokStatus();
         printf("\n");
+
         //행동
         //시민
         printf("citizen does nothing.\n");
-        
+
         //좀비
-        if (zombie_loc - citizen_loc ==1 && dongseok_loc-zombie_loc==1) {
+        if (zombie_loc - citizen_loc == 1 && dongseok_loc - zombie_loc == 1) {
             if (aggro < dongseokaggro) {
                 stm--;
                 if (stm < STM_MIN) {
                     stm++;
                 }
-                printf("Zombie attacked madongseok, (aggro: %d vs. %d,madongseok stamina: %d -> %d)\n",aggro,dongseokaggro,prev_stm,stm);
-           
+                printf("Zombie attacked madongseok, (aggro: %d vs. %d,madongseok stamina: %d -> %d)\n", aggro, dongseokaggro, prev_stm, stm);
+
             }
         }
         else if (dongseok_loc - zombie_loc == 1) {
             stm--;
             if (stm < STM_MIN) {
-                    stm++;
-                }
+                stm++;
+            }
             printf("Zombie attacked Madongseok, Madongseok stamina: %d -> %d\n", prev_stm, stm);
-            
+
         }
         else {
             printf("Zombie attacked nobody\n");
         }
 
         //마동석
-        printf("madongsek action(0.rest, 1.provoke)>> ");
-        scanf_s("%d", &dongseok);
-        printf("\n\n");
+       
         if (dongseok_loc - zombie_loc == 1) {
+            printf("madongsek action(0.rest, 1.provoke, 2.pull)>> ");
+            scanf_s("%d", &dongseok);
+            printf("\n\n");
             if (ACTION_REST == dongseok) {
                 printf("madongseok rests...\n");
                 dongseokaggro--;
@@ -323,31 +331,57 @@ int main(void) {
                 dongseokaggro = AGGRO_MAX;
                 printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
             }
-        }
-        else {
+            else if (dongseok_action == ACTION_PULL && dongseok_loc - zombie_loc == 1){
+
+                int pull_success = rand() % 100;
+                if (pull_success >= p) {
+                    printf("Madongseok pulled zombie...Next turn, it can't move\n");
+                    zombie_immobilized = 1; // 좀비 이동 불가 설정
+                    dongseokaggro += 2;
+                    stm--;
+                }
+                else {
+                    printf("Madongseok failed to pull zombie\n");
+                }
+
+                printf("madongseok: %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+            }
+
+                }
+            
+
+        
+        else{
+             printf("madongsek action(0.rest, 1.provoke)>> ");
+            scanf_s("%d", &dongseok);
+            printf("\n\n");
             if (ACTION_REST == dongseok) {
-                printf("madongseok rests...\n");
-                dongseokaggro--;
-                stm++;
-                printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+            printf("madongseok rests...\n");
+            dongseokaggro--;
+            stm++;
+            printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
             }
             else if (ACTION_PROVOKE == dongseok) {
-                printf("madongseok provoked zombie...\n");
-                dongseokaggro = AGGRO_MAX;
-                printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+            printf("madongseok provoked zombie...\n");
+            dongseokaggro = AGGRO_MAX;
+            printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
             }
+
         }
-        if (citizen_loc == 2 || zombie_loc - citizen_loc == 1 || stm==0) {
+
+        if (citizen_loc == 2 || zombie_loc - citizen_loc == 1 || stm == 0) {
             break;
         }
-       
-
+    
+    GameResult();
+    
+    return 0;
         
     }
 
-   GameResult();
-    return 0;
-}
+   
+
+
 
 
 
