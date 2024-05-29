@@ -31,7 +31,6 @@
 int width, p, prev_aggro, stm, prev_stm, dongseok, citizen_loc, zombie_loc, dongseok_loc, prev_citizen_loc, prev_zombie_loc, prev_dongseokaggro;
 int aggro = 1;
 int dongseokaggro = 1;
-int dongseok_action = ACTION_REST;
 int zombie_immobilized = 0;
 
 // 함수 선언
@@ -133,14 +132,14 @@ void moveDongseok() {
 // 상태 출력 함수
 void printStatus(int turn) {
     if (citizen_loc < prev_citizen_loc) {
-        aggro++;
+        
         if (aggro > AGGRO_MAX) {
             aggro = AGGRO_MAX;
         }
         printf("citizen : %d -> %d (aggro: %d -> %d)\n", prev_citizen_loc - 1, citizen_loc - 1, prev_aggro, aggro);
     }
     else {
-        aggro--;
+        
         if (aggro < AGGRO_MIN) {
             aggro = AGGRO_MIN;
         }
@@ -164,9 +163,15 @@ void printStatus(int turn) {
 void DongseokStatus() {
     if (MOVE_STAY == dongseok) {
         printf("madongseok : stay %d (aggro: %d, stamina %d)\n", dongseok_loc, dongseokaggro, stm);
+        if (stm == 0) {
+            exit(0);
+        }
     }
     else if (MOVE_LEFT == dongseok) {
         printf("madongseok : %d -> %d (aggro: %d, stamina: %d)\n", dongseok_loc, dongseok_loc - 1, dongseokaggro, stm);
+        if (stm == 0) {
+            exit(0);
+        }
     }
 }
 
@@ -175,8 +180,17 @@ void reset() {
     citizen_loc = width - 4;
     zombie_loc = width - 1;
     dongseok_loc = width;
-}
 
+    if (dongseok_loc == zombie_loc) {
+        dongseok_loc--; // 마동석 위치를 왼쪽으로 한 칸 이동
+    }
+    if (dongseok_loc == citizen_loc) {
+        citizen_loc--;  // 시민 위치를 왼쪽으로 한 칸 이동
+    }
+    if (zombie_loc == citizen_loc) {
+        zombie_loc--;   // 좀비 위치를 왼쪽으로 한 칸 이동
+    }
+}
 // 사용자 입력 함수
 void user() {
     while (1) {
@@ -275,9 +289,9 @@ int main(void) {
         printTrain();
         DongseokStatus();
         printf("\n");
-
+//행동
         printf("citizen does nothing.\n");
-
+        //좀비
         if (zombie_loc - citizen_loc == 1 && dongseok_loc - zombie_loc == 1) {
             if (aggro < dongseokaggro) {
                 stm--;
@@ -285,6 +299,9 @@ int main(void) {
                     stm = STM_MIN;
                 }
                 printf("Zombie attacked madongseok, (aggro: %d vs. %d, madongseok stamina: %d -> %d)\n", aggro, dongseokaggro, prev_stm, stm);
+                if (stm == 0) {
+                    exit(0);
+                }
             }
         }
         else if (abs(dongseok_loc - zombie_loc) == 1) {
@@ -293,12 +310,16 @@ int main(void) {
                 stm = STM_MIN;
             }
             printf("Zombie attacked Madongseok, Madongseok stamina: %d -> %d\n", prev_stm, stm);
+            if (stm == 0) {
+                exit(0);
+            }
         }
         else {
             printf("Zombie attacked nobody\n");
         }
-
+        //동석
         if (dongseok_loc - zombie_loc == 1) {
+            //입력
             while (1) {
                 printf("madongsek action(0.rest, 1.provoke, 2.pull)>> ");
                 scanf_s("%d", &dongseok);
@@ -307,8 +328,9 @@ int main(void) {
                 }
             }
             printf("\n\n");
-            if (ACTION_REST == dongseok) {
-                printf("madongseok rests...\n");
+            //선택지(동석과 좀비가 겹치는 경우)
+            if (dongseok == ACTION_REST) {
+                
                 dongseokaggro--;
                 if (dongseokaggro < AGGRO_MIN) {
                     dongseokaggro = AGGRO_MIN;
@@ -317,17 +339,25 @@ int main(void) {
                 if (stm > STM_MAX) {
                     stm = STM_MAX;
                 }
+              
+                printf("madongseok rests...\n");
                 printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+                if (stm == 0) {
+                    exit(0);
+                }
             }
-            else if (ACTION_PROVOKE == dongseok) {
-                printf("madongseok provoked zombie...\n");
+            else if (dongseok == ACTION_PROVOKE) {
                 dongseokaggro = AGGRO_MAX;
+                printf("madongseok provoked zombie...\n");
                 printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+                if (stm == 0) {
+                    exit(0);
+                }
             }
-            else if (dongseok_action == ACTION_PULL && dongseok_loc - zombie_loc == 1) {
+            else if (dongseok == ACTION_PULL && dongseok_loc - zombie_loc == 1) {
                 int pull_success = rand() % 100;
-                if (pull_success >= p) {
-                    printf("Madongseok pulled zombie...Next turn, it can't move\n");
+                if (pull_success > p) {
+                   
                     zombie_immobilized = 1;
                     dongseokaggro += 2;
                     if (dongseokaggro > AGGRO_MAX) {
@@ -337,19 +367,31 @@ int main(void) {
                     if (stm <= STM_MIN) {
                         stm = STM_MIN;
                     }
+                    printf("Madongseok pulled zombie...Next turn, it can't move\n");
+                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+                    if (stm == 0) {
+                        exit(0);
+                    }
                 }
                 else {
                     printf("Madongseok failed to pull zombie\n");
+                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
                 }
-                printf("madongseok: %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+                
             }
         }
+        //좀비와 동석이 겹치지 않는 경우
         else {
-            printf("madongsek action(0.rest, 1.provoke)>> ");
-            scanf_s("%d", &dongseok);
-            printf("\n\n");
-            if (ACTION_REST == dongseok) {
-                printf("madongseok rests...\n");
+            while (1) {
+                printf("madongsek action(0.rest, 1.provoke)>> ");
+                scanf_s("%d", &dongseok);
+                printf("\n\n");
+                if (dongseok == ACTION_REST || dongseok == ACTION_PROVOKE);
+                break;
+               
+            }
+            if (dongseok == ACTION_REST) {
+               
                 dongseokaggro--;
                 if (dongseokaggro < AGGRO_MIN) {
                     dongseokaggro = AGGRO_MIN;
@@ -358,12 +400,21 @@ int main(void) {
                 if (stm > STM_MAX) {
                     stm = STM_MAX;
                 }
+                printf("madongseok rests...\n");
                 printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
+               
+                if (stm == 0) {
+                    exit(0);
+                }
             }
-            else if (ACTION_PROVOKE == dongseok) {
-                printf("madongseok provoked zombie...\n");
+            else if (dongseok == ACTION_PROVOKE) {
+               
                 dongseokaggro = AGGRO_MAX;
+                printf("madongseok provoked zombie...\n");
                 printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+                if (stm == 0) {
+                    exit(0);
+                }
             }
         }
 
