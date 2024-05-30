@@ -1,3 +1,4 @@
+//진행 상황은 부산헹(2), 2-4,  <행동> 예외 처리까지 했습니다.
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
@@ -47,6 +48,10 @@ void GameResult();
 
 // 기차 길이 출력
 void printTrain() {
+    
+    
+   
+
     int i;
     for (i = 0; i <= width; i++) {
         printf("#");
@@ -58,9 +63,11 @@ void printTrain() {
             printf("C");
         }
         else if (i == dongseok_loc) {
+           
             printf("M");
         }
         else if (i == zombie_loc) {
+             
             printf("Z");
         }
         else {
@@ -106,8 +113,13 @@ void moveZombie(int turn) {
         else {
             zombie_loc = (citizen_loc < dongseok_loc) ? prev_zombie_loc - 1 : prev_zombie_loc + 1;
         }
+        // 좀비가 마동석의 오른쪽으로 이동하지 않고 겹치지도 않게 제약
+        if (zombie_loc >= dongseok_loc) {
+            zombie_loc = dongseok_loc - 1;
+        }
     }
 }
+
 
 // 동석 이동 함수
 void moveDongseok() {
@@ -121,13 +133,16 @@ void moveDongseok() {
         }
     }
     else if (MOVE_LEFT == dongseok) {
-        dongseokaggro--;
-        if (dongseokaggro < AGGRO_MIN) {
-            dongseokaggro = AGGRO_MIN;
+        if (dongseok_loc > zombie_loc + 1) {  // 좀비보다 앞쪽으로 이동하지 않도록 제약
+            dongseokaggro--;
+            if (dongseokaggro < AGGRO_MIN) {
+                dongseokaggro = AGGRO_MIN;
+            }
+            dongseok_loc--;
         }
-        dongseok_loc--;
     }
 }
+
 
 // 상태 출력 함수
 void printStatus(int turn) {
@@ -181,15 +196,7 @@ void reset() {
     zombie_loc = width - 1;
     dongseok_loc = width;
 
-    if (dongseok_loc == zombie_loc) {
-        dongseok_loc--; // 마동석 위치를 왼쪽으로 한 칸 이동
-    }
-    if (dongseok_loc == citizen_loc) {
-        citizen_loc--;  // 시민 위치를 왼쪽으로 한 칸 이동
-    }
-    if (zombie_loc == citizen_loc) {
-        zombie_loc--;   // 좀비 위치를 왼쪽으로 한 칸 이동
-    }
+   
 }
 // 사용자 입력 함수
 void user() {
@@ -274,9 +281,9 @@ int main(void) {
         turn++;
         prev_citizen_loc = citizen_loc;
         prev_zombie_loc = zombie_loc;
-        prev_stm = stm;
         prev_dongseokaggro = dongseokaggro;
         prev_aggro = aggro;
+        prev_stm = stm;
 
         moveCitizen();
         moveZombie(turn);
@@ -294,6 +301,7 @@ int main(void) {
         //좀비
         if (zombie_loc - citizen_loc == 1 && dongseok_loc - zombie_loc == 1) {
             if (aggro < dongseokaggro) {
+
                 stm--;
                 if (stm < STM_MIN) {
                     stm = STM_MIN;
@@ -313,6 +321,7 @@ int main(void) {
             if (stm == 0) {
                 exit(0);
             }
+           
         }
         else {
             printf("Zombie attacked nobody\n");
@@ -335,11 +344,12 @@ int main(void) {
                 if (dongseokaggro < AGGRO_MIN) {
                     dongseokaggro = AGGRO_MIN;
                 }
+                prev_stm = stm;
                 stm++;
                 if (stm > STM_MAX) {
                     stm = STM_MAX;
                 }
-              
+                
                 printf("madongseok rests...\n");
                 printf("madongseok : %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
                 if (stm == 0) {
@@ -363,19 +373,20 @@ int main(void) {
                     if (dongseokaggro > AGGRO_MAX) {
                         dongseokaggro = AGGRO_MAX;
                     }
+                    prev_stm = stm;
                     stm--;
                     if (stm <= STM_MIN) {
                         stm = STM_MIN;
                     }
                     printf("Madongseok pulled zombie...Next turn, it can't move\n");
-                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d -> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm,stm);
                     if (stm == 0) {
                         exit(0);
                     }
                 }
                 else {
                     printf("Madongseok failed to pull zombie\n");
-                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, stm);
+                    printf("madongseok: %d (aggro: %d -> %d, stamina: %d-> %d)\n", dongseok_loc, prev_dongseokaggro, dongseokaggro, prev_stm, stm);
                 }
                 
             }
@@ -396,6 +407,7 @@ int main(void) {
                 if (dongseokaggro < AGGRO_MIN) {
                     dongseokaggro = AGGRO_MIN;
                 }
+                prev_stm = stm;
                 stm++;
                 if (stm > STM_MAX) {
                     stm = STM_MAX;
